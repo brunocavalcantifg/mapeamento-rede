@@ -192,9 +192,9 @@ textarea.campo{resize:vertical;min-height:70px}
 <div class="login-veu" id="login" role="dialog" aria-labelledby="loginTitulo">
   <div class="login-card">
     <h2 id="loginTitulo">Mapeamento da Rede</h2>
-    <p>Coloca seu email. Você recebe um link — clica nele e entra. Sem senha.</p>
-    <input type="email" id="email" placeholder="seu@email.com" autocomplete="email" inputmode="email">
-    <button class="bt" id="btLink">Receber link</button>
+    <p>Digite a senha compartilhada da equipe.</p>
+    <input type="password" id="senha" placeholder="senha" autocomplete="current-password">
+    <button class="bt" id="btEntrar">Entrar</button>
     <div id="loginMsg" class="login-msg" aria-live="polite"></div>
   </div>
 </div>
@@ -337,8 +337,9 @@ const PASSOS=[
 /* ---------- Supabase ---------- */
 const SB_URL="https://znwjgsyuhafrgiqijehm.supabase.co";
 const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpud2pnc3l1aGFmcmdpcWlqZWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyMjA1NjQsImV4cCI6MjEwMDc5NjU2NH0.r6cYbVMiheMi28qB5UarlzHzyfrGqosytiXDlLCpCgs";
+const SB_LOGIN_EMAIL="equipe@mapeamento-rede.app";
 const sb = window.supabase.createClient(SB_URL, SB_KEY, {
-  auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, flowType:"pkce" }
+  auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }
 });
 
 /* ---------- armazenamento ---------- */
@@ -757,20 +758,19 @@ window.addEventListener("beforeunload",e=>{
 function mostrarLogin(){ $("#login").classList.add("on"); $("#sair").style.display="none"; }
 function esconderLogin(){ $("#login").classList.remove("on"); $("#sair").style.display=""; }
 
-async function enviarLink(){
-  const email=$("#email").value.trim();
+async function entrar(){
+  const senha=$("#senha").value;
   const msg=$("#loginMsg");
   msg.className="login-msg";
-  if(!email||!/.+@.+\..+/.test(email)){ msg.textContent="Digite um email válido."; msg.classList.add("err"); return; }
-  const bt=$("#btLink"); bt.disabled=true; bt.textContent="Enviando...";
-  const redir=location.origin+location.pathname;
-  const {error}=await sb.auth.signInWithOtp({ email, options:{ emailRedirectTo:redir } });
-  bt.disabled=false; bt.textContent="Receber link";
-  if(error){ msg.textContent="Erro: "+error.message; msg.classList.add("err"); return; }
-  msg.textContent="Link enviado. Abre o email e clica pra entrar."; msg.classList.add("ok");
+  if(!senha){ msg.textContent="Digite a senha."; msg.classList.add("err"); return; }
+  const bt=$("#btEntrar"); bt.disabled=true; bt.textContent="Entrando...";
+  const {error}=await sb.auth.signInWithPassword({ email:SB_LOGIN_EMAIL, password:senha });
+  bt.disabled=false; bt.textContent="Entrar";
+  if(error){ msg.textContent="Senha incorreta."; msg.classList.add("err"); $("#senha").select(); return; }
+  msg.textContent=""; $("#senha").value="";
 }
-$("#btLink").addEventListener("click",enviarLink);
-$("#email").addEventListener("keydown",e=>{ if(e.key==="Enter") enviarLink(); });
+$("#btEntrar").addEventListener("click",entrar);
+$("#senha").addEventListener("keydown",e=>{ if(e.key==="Enter") entrar(); });
 $("#sair").addEventListener("click",async()=>{
   if(!confirm("Sair da conta neste dispositivo? A fila local será limpa.")) return;
   await sb.auth.signOut();
