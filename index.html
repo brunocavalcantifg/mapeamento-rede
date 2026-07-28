@@ -321,6 +321,7 @@ textarea.campo{resize:vertical;min-height:70px}
 
 <script>
 const SETORES=["Comércio","Empresariado","Agronegócio","Agricultura familiar","Igreja","Associação de moradores","Esporte","Saúde","Educação","Segurança pública","Transporte","Funcionalismo público","Juventude","Mulheres","Terceiro setor","Sindicato","Comunidade rural","Imprensa","Redes sociais","Outro"];
+const MUNICIPIOS_MS=["Água Clara","Alcinópolis","Amambai","Anastácio","Anaurilândia","Angélica","Antônio João","Aparecida do Taboado","Aquidauana","Aral Moreira","Bandeirantes","Bataguassu","Batayporã","Bela Vista","Bodoquena","Bonito","Brasilândia","Caarapó","Camapuã","Campo Grande","Caracol","Cassilândia","Chapadão do Sul","Corguinho","Coronel Sapucaia","Corumbá","Costa Rica","Coxim","Deodápolis","Dois Irmãos do Buriti","Douradina","Dourados","Eldorado","Fátima do Sul","Figueirão","Glória de Dourados","Guia Lopes da Laguna","Iguatemi","Inocência","Itaporã","Itaquiraí","Ivinhema","Japorã","Jaraguari","Jardim","Jateí","Juti","Ladário","Laguna Carapã","Maracaju","Miranda","Mundo Novo","Naviraí","Nioaque","Nova Alvorada do Sul","Nova Andradina","Novo Horizonte do Sul","Paraíso das Águas","Paranaíba","Paranhos","Pedro Gomes","Ponta Porã","Porto Murtinho","Ribas do Rio Pardo","Rio Brilhante","Rio Negro","Rio Verde de Mato Grosso","Rochedo","Santa Rita do Pardo","São Gabriel do Oeste","Selvíria","Sete Quedas","Sidrolândia","Sonora","Tacuru","Taquarussu","Terenos","Três Lagoas","Vicentina"];
 const NIVEIS=[
  {n:1,t:"Possível eleitor",c:"var(--n1)",d:"Simpatiza e poderia votar, mas não demonstra interesse em mobilizar ninguém."},
  {n:2,t:"Multiplicador familiar",c:"var(--n2)",d:"Conversa com família e amigos próximos e consegue apresentar alguns contatos."},
@@ -699,7 +700,9 @@ $("#lista").addEventListener("click",async e=>{
 ["#busca","#fMun","#fNiv","#fSet","#fOrig"].forEach(s=>document.addEventListener("input",e=>{if(e.target.matches(s))desenharLista();}));
 function atualizarContadores(){
   $("#contaFichas").textContent=fichas.length;
-  $("#lista-mun").innerHTML=Array.from(new Set(fichas.map(f=>f.municipio).filter(Boolean))).sort().map(m=>`<option value="${esc(m)}">`).join("");
+  const todos=Array.from(new Set([...MUNICIPIOS_MS,...fichas.map(f=>f.municipio).filter(Boolean)]))
+    .sort((a,b)=>a.localeCompare(b,"pt-BR"));
+  $("#lista-mun").innerHTML=todos.map(m=>`<option value="${esc(m)}">`).join("");
 }
 
 /* ---------- resumo ---------- */
