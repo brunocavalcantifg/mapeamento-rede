@@ -1,0 +1,811 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root{
+  --tinta:#12211C; --tinta-70:rgba(18,33,28,.68); --tinta-45:rgba(18,33,28,.45);
+  --papel:#E9ECE5; --card:#F5F7F2;
+  --verde:#1E4D3C; --verde-claro:#3B7A5E; --ambar:#C07A12; --barro:#9C3B2A;
+  --linha:rgba(18,33,28,.14); --linha-forte:rgba(18,33,28,.26);
+  --n1:#87938D; --n2:#5B8F76; --n3:#3B7A5E; --n4:#C07A12; --n5:#9C3B2A;
+  --display:'Archivo',system-ui,sans-serif; --corpo:'IBM Plex Sans',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--papel);color:var(--tinta);font-family:var(--corpo);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:80px}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+:focus-visible{outline:2.5px solid var(--ambar);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- topo ---------- */
+.topo{background:var(--verde);color:#EDF2ED;position:relative;overflow:hidden}
+.topo svg{position:absolute;inset:0;width:100%;height:100%;opacity:.15;pointer-events:none}
+.topo-in{position:relative;max-width:1180px;margin:0 auto;padding:16px 20px 0;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.marca h1{font-family:var(--display);font-weight:800;font-size:21px;letter-spacing:-.02em;text-transform:uppercase;margin:0;line-height:1}
+.marca .sub{font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;opacity:.7;margin-top:3px}
+.resp{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;opacity:.85}
+.resp input{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.28);border-radius:3px;color:#fff;padding:5px 8px;width:150px;font-family:var(--corpo);font-size:13px;letter-spacing:0;text-transform:none}
+.resp input::placeholder{color:rgba(255,255,255,.5)}
+.abas{position:relative;max-width:1180px;margin:0 auto;padding:12px 20px 0;display:flex;gap:2px}
+.aba{background:transparent;border:0;border-bottom:3px solid transparent;color:rgba(237,242,237,.62);padding:8px 14px;font-family:var(--display);font-weight:600;font-size:12px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.aba:hover{color:#fff}
+.aba.on{color:#fff;border-bottom-color:var(--ambar)}
+.aba .cont{font-family:var(--mono);font-size:11px;opacity:.7;margin-left:4px}
+
+.palco{max-width:1180px;margin:0 auto;padding:18px 20px}
+.painel{display:none}.painel.on{display:block}
+.bloco{background:var(--card);border:1px solid var(--linha);border-radius:5px}
+.bloco>h2{font-family:var(--display);font-weight:800;font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin:0;padding:12px 15px;border-bottom:1px solid var(--linha);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.bloco>h2 .marc{font-family:var(--mono);font-weight:400;font-size:11px;letter-spacing:.05em;color:var(--tinta-45);text-transform:none}
+
+/* ---------- inicio da ligacao ---------- */
+.abertura{max-width:560px;margin:6vh auto;background:var(--card);border:1px solid var(--linha);border-radius:6px;padding:26px}
+.abertura h2{font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:-.01em;margin:0 0 6px}
+.abertura p.d{color:var(--tinta-70);margin:0 0 20px;font-size:14px}
+
+/* ---------- barra da sessao ---------- */
+.sessao{position:sticky;top:0;z-index:20;background:var(--tinta);color:#EDF2ED;border-radius:5px;padding:11px 15px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:16px}
+.sessao .et{font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;opacity:.55}
+.sessao .qm{font-family:var(--display);font-weight:800;font-size:17px;letter-spacing:-.01em}
+.sessao .tp{border:1px solid rgba(237,242,237,.35);border-radius:99px;padding:2px 9px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+.sessao .dir{margin-left:auto;display:flex;gap:8px;align-items:center}
+.sessao button{background:transparent;border:1px solid rgba(237,242,237,.35);color:#EDF2ED;border-radius:4px;padding:6px 11px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;cursor:pointer}
+.sessao button:hover{background:rgba(237,242,237,.12)}
+
+.duplo{display:grid;grid-template-columns:minmax(0,290px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:920px){.duplo{grid-template-columns:1fr}}
+
+/* ---------- fila ---------- */
+.fila-add{padding:13px 15px;border-bottom:1px solid var(--linha);display:grid;gap:8px}
+.fila-add input{width:100%;background:#fff;border:1px solid var(--linha-forte);border-radius:4px;padding:10px}
+.cidade-atual{display:flex;align-items:center;gap:8px;background:rgba(30,77,60,.1);border:1px solid rgba(30,77,60,.28);border-radius:4px;padding:5px 6px 5px 11px}
+.cidade-atual .et{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--verde);font-weight:600}
+.cidade-atual input{flex:1;min-width:0;background:transparent;border:0;padding:5px 0;font-weight:600;font-size:15px}
+.cidade-atual input::placeholder{font-weight:400;color:var(--tinta-45)}
+.cidade-atual .x{background:transparent;border:0;color:var(--tinta-45);cursor:pointer;font-size:19px;line-height:1;padding:0 6px}
+.cidade-atual .x:hover{color:var(--barro)}
+.grupo-mun{display:flex;align-items:center;gap:8px;padding:10px 4px 4px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--verde);font-weight:600}
+.grupo-mun i{flex:1;height:1px;background:var(--linha);display:block}
+.grupo-mun em{font-style:normal;color:var(--tinta-45)}
+.fila-lista{padding:8px;display:grid;gap:5px;max-height:52vh;overflow:auto}
+@media (max-width:920px){.fila-lista{max-height:none;grid-auto-flow:row}}
+.item{background:#fff;border:1px solid var(--linha);border-left:3px solid var(--linha-forte);border-radius:4px;padding:9px 11px;cursor:pointer;display:flex;gap:8px;align-items:center}
+.item:hover{border-color:var(--verde-claro)}
+.item.on{border-left-color:var(--ambar);background:rgba(192,122,18,.1);border-color:rgba(192,122,18,.4)}
+.item .nm{font-weight:600;font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .mu{font-family:var(--mono);font-size:10px;color:var(--tinta-45);text-transform:uppercase;letter-spacing:.07em}
+.item .x{background:transparent;border:0;color:var(--tinta-45);cursor:pointer;padding:0 2px;font-size:16px;line-height:1}
+.item .x:hover{color:var(--barro)}
+.fila-vazia{padding:22px 15px;text-align:center;color:var(--tinta-45);font-size:13px}
+
+/* ---------- etapas ---------- */
+.passos{display:flex;gap:4px;padding:12px 15px;border-bottom:1px solid var(--linha)}
+.pill{flex:1;background:transparent;border:0;border-top:3px solid var(--linha);padding:7px 4px 0;text-align:left;cursor:pointer;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--tinta-45)}
+.pill:hover{color:var(--tinta)}
+.pill.on{border-top-color:var(--ambar);color:var(--tinta);font-weight:600}
+.pill.ok{border-top-color:var(--verde-claro)}
+.dizer{margin:15px 15px 0;background:rgba(30,77,60,.08);border-left:3px solid var(--verde);border-radius:0 4px 4px 0;padding:12px 14px}
+.dizer .lb{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--verde);font-weight:600}
+.dizer p{margin:5px 0 0;font-size:15px;line-height:1.55}
+.dizer.pensar{background:rgba(192,122,18,.1);border-left-color:var(--ambar)}
+.dizer.pensar .lb{color:var(--ambar)}
+
+.grade{padding:15px;display:grid;grid-template-columns:repeat(12,1fr);gap:13px}
+.c3{grid-column:span 3}.c4{grid-column:span 4}.c6{grid-column:span 6}.c12{grid-column:span 12}
+@media (max-width:700px){.c3,.c4,.c6{grid-column:span 12}}
+label.rot{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--tinta-45);margin:0 0 5px;font-weight:600}
+.campo{width:100%;background:#fff;border:1px solid var(--linha-forte);border-radius:4px;padding:10px}
+.campo:hover{border-color:var(--verde-claro)}
+textarea.campo{resize:vertical;min-height:70px}
+.dica{font-size:12px;color:var(--tinta-45);margin:6px 0 0}
+.opcs{display:flex;flex-wrap:wrap;gap:6px}
+.opc{background:#fff;border:1px solid var(--linha-forte);border-radius:99px;padding:8px 15px;font-size:14px;cursor:pointer;color:var(--tinta-70)}
+.opc:hover{border-color:var(--verde-claro);color:var(--tinta)}
+.opc.on{background:var(--verde);border-color:var(--verde);color:#fff;font-weight:500}
+.opc.on.neg{background:var(--barro);border-color:var(--barro)}
+.setores .opc.on{background:var(--verde-claro);border-color:var(--verde-claro)}
+
+.niveis{display:grid;gap:7px}
+.niv{display:grid;grid-template-columns:64px 1fr;gap:12px;align-items:center;background:#fff;border:1px solid var(--linha-forte);border-left:5px solid var(--cor);border-radius:4px;padding:11px 13px;cursor:pointer;text-align:left}
+.niv:hover{background:rgba(30,77,60,.05)}
+.niv b{font-family:var(--display);font-weight:800;font-size:13px;letter-spacing:.05em;color:var(--cor);text-transform:uppercase}
+.niv b i{display:block;font-style:normal;font-family:var(--mono);font-size:10px;opacity:.75}
+.niv span{font-size:13px;color:var(--tinta-70);line-height:1.4}
+.niv.on{background:var(--cor);border-color:var(--cor)}
+.niv.on b,.niv.on span{color:#fff}
+.niv.on b i{opacity:.85}
+
+.revisao{background:#fff;border:1px solid var(--linha);border-radius:4px;padding:12px 14px}
+.revisao div{display:grid;grid-template-columns:132px 1fr;gap:10px;padding:3px 0;font-size:13px;border-bottom:1px dotted var(--linha)}
+.revisao div:last-child{border:0}
+.revisao dt{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tinta-45);margin:0;padding-top:2px}
+.revisao dd{margin:0}
+.revisao .falta{color:var(--tinta-45);font-style:italic}
+
+/* ---------- barra de acao ---------- */
+.rodape{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1px solid var(--linha-forte);padding:11px 20px;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.rodape .in{max-width:1180px;margin:0 auto;width:100%;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.bt{border:1px solid var(--verde);background:var(--verde);color:#fff;border-radius:4px;padding:11px 20px;font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.bt:hover{background:#173d30}
+.bt:disabled{opacity:.4;cursor:default}
+.bt.fantasma{background:transparent;color:var(--verde)}
+.bt.fantasma:hover{background:rgba(30,77,60,.1)}
+.bt.perigo{border-color:var(--barro);color:var(--barro);background:transparent}
+.bt.perigo:hover{background:rgba(156,59,42,.1)}
+.bt.mini{padding:7px 12px;font-size:11px}
+.estado{font-family:var(--mono);font-size:11px;color:var(--tinta-45);margin-left:auto}
+
+/* ---------- fichas ---------- */
+.filtros{display:flex;flex-wrap:wrap;gap:9px;padding:13px 15px;border-bottom:1px solid var(--linha)}
+.filtros .campo{width:auto;flex:1 1 150px;min-width:0}
+.lista{padding:14px 15px;display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.ficha{background:#fff;border:1px solid var(--linha);border-left:4px solid var(--cor);border-radius:4px;padding:12px 14px;cursor:pointer}
+.ficha:hover{border-color:var(--verde-claro);border-left-color:var(--cor)}
+.ficha .nm{font-family:var(--display);font-weight:800;font-size:16px}
+.ficha .mu{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--tinta-45);margin-top:1px}
+.ficha .tag{display:inline-block;background:var(--cor);color:#fff;font-family:var(--mono);font-size:10px;letter-spacing:.08em;padding:2px 7px;border-radius:99px;margin-top:8px}
+.ficha .orig{display:inline-block;border:1px solid var(--linha-forte);color:var(--tinta-70);font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:99px;margin:8px 0 0 5px}
+.ficha .li{font-size:13px;color:var(--tinta-70);margin-top:7px}
+.ficha .id{font-family:var(--mono);font-size:10px;color:var(--tinta-45);float:right}
+.vazio{padding:40px 20px;text-align:center;color:var(--tinta-45)}
+.vazio b{display:block;font-family:var(--display);font-weight:800;font-size:16px;color:var(--tinta);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+
+/* ---------- resumo ---------- */
+.cartoes{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;padding:15px}
+.num{background:#fff;border:1px solid var(--linha);border-radius:4px;padding:14px}
+.num b{display:block;font-family:var(--display);font-weight:800;font-size:30px;line-height:1;letter-spacing:-.03em}
+.num span{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--tinta-45);margin-top:6px}
+.tabela{padding:4px 15px 15px}
+.linha-b{display:grid;grid-template-columns:minmax(105px,1fr) 2.4fr 40px;gap:10px;align-items:center;padding:5px 0;font-size:14px}
+.linha-b .tr{height:9px;background:var(--linha);border-radius:2px;overflow:hidden}
+.linha-b .tr i{display:block;height:100%;background:var(--cor,var(--verde-claro))}
+.linha-b .qt{font-family:var(--mono);font-size:12px;text-align:right;color:var(--tinta-70)}
+
+/* ---------- modal / toast ---------- */
+.veu{position:fixed;inset:0;background:rgba(18,33,28,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+.veu.on{display:flex}
+.modal{background:var(--card);border-radius:6px;max-width:720px;width:100%;max-height:86vh;display:flex;flex-direction:column;overflow:hidden}
+.modal h3{font-family:var(--display);font-weight:800;font-size:14px;letter-spacing:.1em;text-transform:uppercase;margin:0;padding:14px 15px;border-bottom:1px solid var(--linha)}
+.modal .in{padding:15px;overflow:auto}
+.modal textarea{width:100%;height:240px;font-family:var(--mono);font-size:12px;border:1px solid var(--linha-forte);border-radius:4px;padding:10px;background:#fff}
+.toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);background:var(--tinta);color:#fff;padding:11px 20px;border-radius:4px;font-size:14px;z-index:60;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+
+/* ---------- login ---------- */
+.login-veu{position:fixed;inset:0;background:var(--verde);display:none;align-items:center;justify-content:center;padding:20px;z-index:100}
+.login-veu.on{display:flex}
+.login-card{background:var(--card);border-radius:6px;padding:28px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.login-card h2{font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:-.01em;margin:0 0 6px;text-transform:uppercase}
+.login-card p{color:var(--tinta-70);margin:0 0 20px;font-size:14px}
+.login-card input{width:100%;background:#fff;border:1px solid var(--linha-forte);border-radius:4px;padding:12px;margin-bottom:12px;font-size:15px}
+.login-card .bt{width:100%;justify-content:center}
+.login-msg{margin-top:12px;font-size:13px;color:var(--verde);min-height:20px;line-height:1.4}
+.login-msg.err{color:var(--barro)}
+.login-msg.ok{color:var(--verde);font-weight:500}
+.resp .sair{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.28);color:#fff;border-radius:3px;padding:5px 10px;font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;cursor:pointer;margin-left:8px}
+.resp .sair:hover{background:rgba(255,255,255,.22)}
+</style>
+
+<div class="login-veu" id="login" role="dialog" aria-labelledby="loginTitulo">
+  <div class="login-card">
+    <h2 id="loginTitulo">Mapeamento da Rede</h2>
+    <p>Coloca seu email. Você recebe um link — clica nele e entra. Sem senha.</p>
+    <input type="email" id="email" placeholder="seu@email.com" autocomplete="email" inputmode="email">
+    <button class="bt" id="btLink">Receber link</button>
+    <div id="loginMsg" class="login-msg" aria-live="polite"></div>
+  </div>
+</div>
+
+<header class="topo">
+  <svg viewBox="0 0 1200 160" preserveAspectRatio="none" aria-hidden="true">
+    <g fill="none" stroke="#EDF2ED" stroke-width="1">
+      <path d="M0 130 C 150 96, 260 152, 420 120 S 700 88, 860 124 S 1080 152, 1200 116"/>
+      <path d="M0 106 C 160 72, 270 128, 430 96 S 705 64, 865 100 S 1085 128, 1200 92"/>
+      <path d="M0 82 C 170 48, 280 104, 440 72 S 710 40, 870 76 S 1090 104, 1200 68"/>
+      <path d="M0 58 C 180 24, 290 80, 450 48 S 715 16, 875 52 S 1095 80, 1200 44"/>
+      <path d="M0 34 C 190 0, 300 56, 460 24 S 720 -8, 880 28 S 1100 56, 1200 20"/>
+    </g>
+  </svg>
+  <div class="topo-in">
+    <div class="marca"><h1>Mapeamento da Rede</h1><div class="sub">Municípios do interior</div></div>
+    <label class="resp">Quem está ligando<input id="responsavel" placeholder="seu nome"><button type="button" class="sair" id="sair" title="sair da conta">Sair</button></label>
+  </div>
+  <nav class="abas">
+    <button class="aba on" data-painel="ligacao">Ligação</button>
+    <button class="aba" data-painel="fichas">Fichas <span class="cont" id="contaFichas">0</span></button>
+    <button class="aba" data-painel="resumo">Resumo</button>
+  </nav>
+</header>
+
+<main class="palco">
+
+<section class="painel on" id="p-ligacao">
+
+  <div class="abertura" id="abertura">
+    <h2>Com quem você vai falar?</h2>
+    <p class="d">Preencha uma vez só. Todos os contatos que essa pessoa citar já entram ligados ao nome dela.</p>
+    <label class="rot" for="s_nome">Nome de quem está sendo entrevistado</label>
+    <input class="campo" id="s_nome" placeholder="ex: Carlos Ferreira" style="margin-bottom:16px">
+    <label class="rot">Essa pessoa é</label>
+    <div class="opcs" id="s_tipo" style="margin-bottom:20px">
+      <button class="opc" data-v="Assessor">Assessor</button>
+      <button class="opc" data-v="Liderança">Liderança</button>
+      <button class="opc" data-v="Apoiador">Apoiador</button>
+    </div>
+    <button class="bt" id="comecar">Começar a ligação</button>
+  </div>
+
+  <div id="trabalho" style="display:none">
+    <div class="sessao">
+      <div>
+        <div class="et">Falando com</div>
+        <div class="qm"><span id="sesNome"></span> <span class="tp" id="sesTipo"></span></div>
+      </div>
+      <div class="dir">
+        <button id="trocar">Trocar pessoa</button>
+      </div>
+    </div>
+
+    <div class="duplo">
+      <div class="bloco">
+        <h2>Nomes citados <span class="marc" id="filaConta">0 na fila</span></h2>
+        <div class="fila-add">
+          <div class="cidade-atual" id="cidadeAtual">
+            <span class="et">Cidade</span>
+            <input id="q_mun" list="lista-mun" placeholder="digite o município"><datalist id="lista-mun"></datalist>
+            <button class="x" id="q_limpaMun" title="trocar de cidade">×</button>
+          </div>
+          <input id="q_nome" placeholder="nome que ele citou">
+          <button class="bt mini" id="q_add">Anotar</button>
+          <p class="dica" style="margin:0">A cidade fica fixa. Vá só digitando os nomes e apertando Enter. Quando ele mudar de município, troque ali em cima.</p>
+        </div>
+        <div class="fila-lista" id="fila"></div>
+      </div>
+
+      <div class="bloco" id="cartaoEtapa">
+        <h2><span id="tituloEtapa">Detalhando</span> <span class="marc" id="marcaEtapa"></span></h2>
+        <div class="passos" id="passos"></div>
+        <div id="conteudoEtapa"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="painel" id="p-fichas">
+  <div class="bloco">
+    <h2>Fichas registradas <span class="marc"><button class="bt fantasma mini" id="exportar">Exportar CSV</button></span></h2>
+    <div class="filtros">
+      <input class="campo" id="busca" placeholder="buscar nome, bairro, profissão...">
+      <select class="campo" id="fMun"><option value="">todos os municípios</option></select>
+      <select class="campo" id="fNiv"><option value="">todos os níveis</option></select>
+      <select class="campo" id="fSet"><option value="">todos os setores</option></select>
+      <select class="campo" id="fOrig"><option value="">toda origem</option><option>Assessor</option><option>Liderança</option><option>Apoiador</option></select>
+    </div>
+    <div class="lista" id="lista"></div>
+  </div>
+</section>
+
+<section class="painel" id="p-resumo">
+  <div class="bloco" style="margin-bottom:16px"><h2>Panorama geral</h2><div class="cartoes" id="cartoes"></div></div>
+  <div class="duplo">
+    <div class="bloco"><h2>Contatos por nível</h2><div class="tabela" id="grNiveis"></div></div>
+    <div class="bloco"><h2>Contatos por município</h2><div class="tabela" id="grMun"></div></div>
+  </div>
+  <div class="duplo" style="margin-top:16px">
+    <div class="bloco"><h2>De onde vieram as indicações</h2><div class="tabela" id="grOrig"></div></div>
+    <div class="bloco"><h2>Setores alcançados</h2><div class="tabela" id="grSet"></div></div>
+  </div>
+</section>
+</main>
+
+<div class="rodape" id="rodape"><div class="in" id="rodapeIn"></div></div>
+
+<div class="veu" id="veu">
+  <div class="modal">
+    <h3>Exportar para planilha</h3>
+    <div class="in">
+      <p class="dica" style="margin:0 0 10px">Se o download não abrir, copie o texto e cole num arquivo <b>.csv</b> ou direto no Excel.</p>
+      <textarea id="csvTexto" readonly></textarea>
+      <div style="display:flex;gap:9px;margin-top:12px;flex-wrap:wrap">
+        <button class="bt" id="baixar">Baixar arquivo</button>
+        <button class="bt fantasma" id="copiar">Copiar tudo</button>
+        <button class="bt fantasma" id="fechar">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SETORES=["Comércio","Empresariado","Agronegócio","Agricultura familiar","Igreja","Associação de moradores","Esporte","Saúde","Educação","Segurança pública","Transporte","Funcionalismo público","Juventude","Mulheres","Terceiro setor","Sindicato","Comunidade rural","Imprensa","Redes sociais","Outro"];
+const NIVEIS=[
+ {n:1,t:"Possível eleitor",c:"var(--n1)",d:"Simpatiza e poderia votar, mas não demonstra interesse em mobilizar ninguém."},
+ {n:2,t:"Multiplicador familiar",c:"var(--n2)",d:"Conversa com família e amigos próximos e consegue apresentar alguns contatos."},
+ {n:3,t:"Apoiador local",c:"var(--n3)",d:"Ajuda na divulgação, participa de reuniões e aproxima outras pessoas."},
+ {n:4,t:"Mobilizador",c:"var(--n4)",d:"Reúne pessoas, organiza uma conversa e transita por grupos diferentes da cidade."},
+ {n:5,t:"Possível liderança",c:"var(--n5)",d:"Reconhecida na cidade. Abre portas e apresenta outras lideranças."}];
+
+const PASSOS=[
+ {t:"Quem é",lb:"Fale assim",fala:"Qual é o nome completo dela? Em qual município ela mora e com o que ela trabalha?"},
+ {t:"Onde circula",lb:"Fale assim",fala:"Ela participa de algum grupo, entidade ou setor? Em qual bairro ou meio ela é mais conhecida?"},
+ {t:"O que consegue",lb:"Fale assim",fala:"Ela é mais reservada ou costuma reunir gente? Conseguiria juntar cinco, dez pessoas pra uma conversa?"},
+ {t:"Fechamento",lb:"Pense antes de fechar",fala:"Esse contato é só um possível voto, ou tem capacidade de apresentar, reunir e mobilizar outras pessoas?",pensar:true}];
+
+/* ---------- Supabase ---------- */
+const SB_URL="https://znwjgsyuhafrgiqijehm.supabase.co";
+const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpud2pnc3l1aGFmcmdpcWlqZWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyMjA1NjQsImV4cCI6MjEwMDc5NjU2NH0.r6cYbVMiheMi28qB5UarlzHzyfrGqosytiXDlLCpCgs";
+const sb = window.supabase.createClient(SB_URL, SB_KEY, {
+  auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, flowType:"pkce" }
+});
+
+/* ---------- armazenamento ---------- */
+const K_FICHAS="mapeamento:fichas", K_FILA="mapeamento:fila", K_SES="mapeamento:sessao", K_CFG="mapeamento:config";
+let memoria={};
+const temStore = typeof window!=="undefined" && window.storage && typeof window.storage.get==="function";
+let temLS=false;
+try{ if(typeof localStorage!=="undefined"){ localStorage.setItem("__mp_probe","1"); localStorage.removeItem("__mp_probe"); temLS=true; } }catch(e){}
+const persistente = temStore || temLS;
+async function ler(k,p){
+  if(temStore){
+    try{ const r=await window.storage.get(k,false); if(!r||r.value==null) return p; return JSON.parse(r.value);}catch(e){}
+  }
+  if(temLS){
+    try{ const v=localStorage.getItem(k); return v==null?p:JSON.parse(v);}catch(e){}
+  }
+  return (k in memoria)?memoria[k]:p;
+}
+async function gravar(k,v){
+  memoria[k]=v;
+  if(temStore){
+    try{ await window.storage.set(k,JSON.stringify(v),false); return true;}catch(e){}
+  }
+  if(temLS){
+    try{ localStorage.setItem(k,JSON.stringify(v)); return true;}catch(e){}
+  }
+  return false;
+}
+
+/* ---------- estado ---------- */
+let fichas=[], fila=[], sessao={indicou:"",tipoIndicou:""}, atual=null, passo=0;
+function nova(){return{id:null,nome:"",telefone:"",municipio:"",bairro:"",profissao:"",grau:"",indicou:"",tipoIndicou:"",relacao:"",setor:[],influencia:"",apresenta:"",quantidade:"",reuniao:"",nivel:"",obs:"",responsavel:"",data:"",_editId:null};}
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(t._x);t._x=setTimeout(()=>t.classList.remove("on"),2200);}
+const item=()=>atual==null?null:fila[atual];
+
+/* ---------- abertura da sessão ---------- */
+$("#s_tipo").addEventListener("click",e=>{const b=e.target.closest(".opc");if(!b)return;
+  sessao.tipoIndicou=sessao.tipoIndicou===b.dataset.v?"":b.dataset.v;
+  $$("#s_tipo .opc").forEach(x=>x.classList.toggle("on",x.dataset.v===sessao.tipoIndicou));});
+$("#comecar").addEventListener("click",async()=>{
+  const n=$("#s_nome").value.trim();
+  if(!n){toast("Escreva o nome de quem você vai entrevistar.");$("#s_nome").focus();return;}
+  sessao.indicou=n; await gravar(K_SES,sessao); abrirTrabalho(); $("#q_nome").focus();});
+$("#s_nome").addEventListener("keydown",e=>{if(e.key==="Enter")$("#comecar").click();});
+$("#trocar").addEventListener("click",async()=>{
+  if(fila.length && !confirm("Ainda há nomes na fila sem ficha salva. Eles continuam ligados a "+sessao.indicou+". Trocar mesmo assim?"))return;
+  sessao={indicou:"",tipoIndicou:""}; await gravar(K_SES,sessao);
+  $("#s_nome").value=""; $$("#s_tipo .opc").forEach(x=>x.classList.remove("on"));
+  $("#abertura").style.display=""; $("#trabalho").style.display="none"; desenharRodape();});
+
+function abrirTrabalho(){
+  $("#abertura").style.display="none"; $("#trabalho").style.display="";
+  $("#sesNome").textContent=sessao.indicou;
+  $("#sesTipo").textContent=sessao.tipoIndicou||"sem origem";
+  if(!$("#q_mun").value && fila.length){
+    const ult=fila.filter(f=>f.municipio && f.municipio.trim()).pop();
+    if(ult)$("#q_mun").value=ult.municipio;
+  }
+  desenharFila(); desenharEtapa();
+}
+
+/* ---------- fila ---------- */
+async function addFila(){
+  const n=$("#q_nome").value.trim();
+  if(!n){$("#q_nome").focus();return;}
+  const f=nova(); f.nome=n; f.municipio=$("#q_mun").value.trim();
+  f.indicou=sessao.indicou; f.tipoIndicou=sessao.tipoIndicou;
+  fila.push(f); await gravar(K_FILA,fila);
+  $("#q_nome").value=""; $("#q_nome").focus();
+  if(atual==null){atual=fila.length-1;passo=0;}
+  desenharFila(); desenharEtapa();
+}
+$("#q_add").addEventListener("click",addFila);
+["#q_nome","#q_mun"].forEach(s=>$(s).addEventListener("keydown",e=>{
+  if(e.key!=="Enter")return;
+  if(s==="#q_mun"){$("#q_nome").focus();return;}
+  addFila();
+}));
+$("#q_limpaMun").addEventListener("click",()=>{$("#q_mun").value="";$("#q_mun").focus();});
+
+function desenharFila(){
+  const muns=new Set(fila.map(f=>f.municipio.trim()).filter(Boolean));
+  $("#filaConta").textContent=fila.length
+    ? fila.length+" nome"+(fila.length>1?"s":"")+(muns.size?" · "+muns.size+" cidade"+(muns.size>1?"s":""):"")
+    : "0 na fila";
+  if(!fila.length){$("#fila").innerHTML=`<div class="fila-vazia">Nenhum nome anotado ainda.<br>Escreva acima e aperte Enter.</div>`;return;}
+  const ordem=[], grupos={};
+  fila.forEach((f,i)=>{
+    const k=f.municipio.trim()||"__sem";
+    if(!grupos[k]){grupos[k]=[];ordem.push(k);}
+    grupos[k].push(i);
+  });
+  $("#fila").innerHTML=ordem.map(k=>
+    `<div class="grupo-mun">${k==="__sem"?"cidade não informada":esc(k)}<i></i><em>${grupos[k].length}</em></div>`+
+    grupos[k].map(i=>{const f=fila[i];
+      return `<div class="item ${i===atual?"on":""}" data-i="${i}">
+        <span class="nm">${esc(f.nome)||"sem nome"}</span>
+        <button class="x" data-rem="${i}" title="tirar da fila">×</button></div>`;}).join("")
+  ).join("");
+}
+$("#fila").addEventListener("click",async e=>{
+  const rem=e.target.closest("[data-rem]");
+  if(rem){const i=Number(rem.dataset.rem);
+    if(!confirm("Tirar "+(fila[i].nome||"esse nome")+" da fila? A ficha não será salva."))return;
+    fila.splice(i,1); await gravar(K_FILA,fila);
+    if(atual!=null){ if(atual===i) atual=fila.length?Math.min(i,fila.length-1):null; else if(atual>i) atual--; }
+    passo=0; desenharFila(); desenharEtapa(); return;}
+  const it=e.target.closest(".item"); if(!it)return;
+  atual=Number(it.dataset.i); passo=0; desenharFila(); desenharEtapa();
+});
+
+/* ---------- etapas ---------- */
+function preenchido(f,p){
+  if(p===0) return !!(f.nome&&f.municipio);
+  if(p===1) return (f.setor||[]).length>0;
+  if(p===2) return !!(f.influencia||f.apresenta||f.quantidade||f.reuniao);
+  return !!f.nivel;
+}
+function desenharPassos(){
+  const f=item();
+  $("#passos").innerHTML=PASSOS.map((p,i)=>`<button class="pill ${i===passo?"on":""} ${f&&preenchido(f,i)&&i!==passo?"ok":""}" data-p="${i}">${i+1}. ${p.t}</button>`).join("");
+}
+$("#passos").addEventListener("click",e=>{const b=e.target.closest(".pill");if(!b||!item())return;passo=Number(b.dataset.p);desenharEtapa();});
+
+function grupo(campo,rot,valores,cls){
+  const f=item();
+  return `<label class="rot">${rot}</label><div class="opcs ${cls||""}" data-unico="${campo}">`+
+    valores.map(v=>{const val=Array.isArray(v)?v[0]:v, txt=Array.isArray(v)?v[1]:v, neg=Array.isArray(v)&&v[2];
+      return `<button class="opc ${f[campo]===val?"on":""} ${neg?"neg":""}" data-v="${esc(val)}">${esc(txt)}</button>`;}).join("")+`</div>`;
+}
+function texto(campo,id,rot,ph,larg){
+  const f=item();
+  return `<div class="${larg||"c6"}"><label class="rot" for="${id}">${rot}</label><input class="campo" id="${id}" data-campo="${campo}" value="${esc(f[campo])}" placeholder="${ph||""}"></div>`;
+}
+
+function desenharEtapa(){
+  const f=item();
+  desenharPassos(); desenharRodape();
+  if(!f){
+    $("#tituloEtapa").textContent="Nenhum contato aberto";
+    $("#marcaEtapa").textContent="";
+    $("#passos").innerHTML="";
+    $("#conteudoEtapa").innerHTML=`<div class="vazio"><b>Comece anotando nomes</b>Enquanto ${esc(sessao.indicou||"a pessoa")} fala, escreva os nomes citados ao lado. Depois clique em cada um pra detalhar.</div>`;
+    return;
+  }
+  $("#tituloEtapa").textContent=f.nome||"Contato sem nome";
+  $("#marcaEtapa").textContent="etapa "+(passo+1)+" de 4"+(f._editId?" · editando ficha "+f._editId:"");
+  const p=PASSOS[passo];
+  let h=`<div class="dizer ${p.pensar?"pensar":""}"><div class="lb">${p.lb}</div><p>${p.fala}</p></div><div class="grade">`;
+
+  if(passo===0){
+    h+=texto("nome","f_nome","Nome","nome completo");
+    h+=texto("telefone","f_tel","Telefone","(00) 00000-0000","c3");
+    h+=`<div class="c3"><label class="rot" for="f_mun">Município</label><input class="campo" id="f_mun" data-campo="municipio" list="lista-mun" value="${esc(f.municipio)}" placeholder="cidade"></div>`;
+    h+=texto("profissao","f_prof","Profissão ou atividade","");
+    h+=texto("relacao","f_rel","Relação com "+(f.indicou||"quem indicou"),"primo, vizinho, sócio...");
+    h+=`<div class="c12">${grupo("grau","Grau de contato entre os dois",[["A","A — próximo"],["B","B — médio"],["C","C — distante"]])}</div>`;
+  }
+  if(passo===1){
+    h+=texto("bairro","f_bairro","Bairro, distrito ou região","onde ela tem mais contato","c12");
+    h+=`<div class="c12"><label class="rot">Setores em que ela transita</label><div class="opcs setores" data-multi="1">`+
+      SETORES.map(s=>`<button class="opc ${(f.setor||[]).includes(s)?"on":""}" data-v="${esc(s)}">${esc(s)}</button>`).join("")+
+      `</div><p class="dica">Pode marcar vários. Se não souber, deixe em branco.</p></div>`;
+  }
+  if(passo===2){
+    h+=`<div class="c6">${grupo("influencia","Influência",[["Só familiar","Só familiar"],["Familiar e externa","Familiar e externa"],["Não sei","Não sei"]])}</div>`;
+    h+=`<div class="c6">${grupo("apresenta","Consegue apresentar outras pessoas?",[["Sim","Sim"],["Talvez","Talvez"],["Não","Não",true]])}</div>`;
+    h+=`<div class="c6">${grupo("quantidade","Quantas pessoas consegue reunir",[["Até 5","até 5"],["5 a 10","5 a 10"],["10 a 30","10 a 30"],["Mais de 30","+30"]])}</div>`;
+    h+=`<div class="c6">${grupo("reuniao","Organizaria uma reunião na campanha?",[["Sim","Sim"],["Talvez","Talvez"],["Não","Não",true]])}</div>`;
+  }
+  if(passo===3){
+    h+=`<div class="c12"><label class="rot">Nível do contato</label><div class="niveis" id="niveis">`+
+      NIVEIS.map(n=>`<button class="niv ${String(f.nivel)===String(n.n)?"on":""}" data-n="${n.n}" style="--cor:${n.c}"><b>Nível ${n.n}<i>${esc(n.t)}</i></b><span>${esc(n.d)}</span></button>`).join("")+`</div></div>`;
+    h+=`<div class="c12"><label class="rot" for="f_obs">Observações da ligação</label><textarea class="campo" id="f_obs" data-campo="obs" placeholder="o que mais apareceu na conversa">${esc(f.obs)}</textarea></div>`;
+    h+=`<div class="c12"><label class="rot">Conferência antes de salvar</label><div class="revisao">${revisao(f)}</div></div>`;
+  }
+  h+=`</div>`;
+  $("#conteudoEtapa").innerHTML=h;
+}
+
+function revisao(f){
+  const l=[["Município",f.municipio],["Profissão",f.profissao],["Bairro/região",f.bairro],
+    ["Setores",(f.setor||[]).join(", ")],["Influência",f.influencia],["Apresenta gente",f.apresenta],
+    ["Reúne",f.quantidade],["Faz reunião",f.reuniao],["Indicado por",f.indicou+(f.tipoIndicou?" ("+f.tipoIndicou.toLowerCase()+")":"")]];
+  return l.map(([k,v])=>`<div><dt>${k}</dt><dd class="${v?"":"falta"}">${v?esc(v):"não perguntado"}</dd></div>`).join("");
+}
+
+/* ---------- edição de campos ---------- */
+document.addEventListener("input",async e=>{
+  const el=e.target;
+  if(el.id==="responsavel"){await gravar(K_CFG,{responsavel:el.value});return;}
+  if(!el.dataset.campo)return;
+  const f=item(); if(!f)return;
+  f[el.dataset.campo]=el.value;
+  if(el.dataset.campo==="nome"||el.dataset.campo==="municipio"){$("#tituloEtapa").textContent=f.nome||"Contato sem nome";desenharFila();}
+  clearTimeout(window._t); window._t=setTimeout(()=>gravar(K_FILA,fila),600);
+});
+
+document.addEventListener("click",async e=>{
+  const aba=e.target.closest(".aba");
+  if(aba){$$(".aba").forEach(a=>a.classList.toggle("on",a===aba));
+    $$(".painel").forEach(p=>p.classList.toggle("on",p.id==="p-"+aba.dataset.painel));
+    if(aba.dataset.painel==="fichas")desenharLista();
+    if(aba.dataset.painel==="resumo")desenharResumo();
+    desenharRodape(); return;}
+
+  const opc=e.target.closest("#conteudoEtapa .opc"); const f=item();
+  if(opc&&f){
+    const g=opc.closest("[data-unico]");
+    if(g){const c=g.dataset.unico; f[c]=f[c]===opc.dataset.v?"":opc.dataset.v;
+      g.querySelectorAll(".opc").forEach(b=>b.classList.toggle("on",b.dataset.v===f[c]));}
+    else if(opc.closest("[data-multi]")){const v=opc.dataset.v;
+      f.setor=(f.setor||[]).includes(v)?f.setor.filter(x=>x!==v):(f.setor||[]).concat(v);
+      opc.classList.toggle("on");}
+    desenharPassos(); gravar(K_FILA,fila); return;}
+
+  const niv=e.target.closest(".niv");
+  if(niv&&f){ f.nivel=String(f.nivel)===niv.dataset.n?"":Number(niv.dataset.n);
+    $$("#niveis .niv").forEach(b=>b.classList.toggle("on",String(f.nivel)===b.dataset.n));
+    desenharPassos(); desenharRodape(); gravar(K_FILA,fila); return;}
+});
+
+/* ---------- rodapé ---------- */
+function desenharRodape(){
+  const painel=$$(".aba").find(a=>a.classList.contains("on")).dataset.painel;
+  const r=$("#rodapeIn");
+  if(painel!=="ligacao"||$("#trabalho").style.display==="none"){$("#rodape").style.display="none";return;}
+  $("#rodape").style.display="";
+  const f=item();
+  if(!f){r.innerHTML=`<span class="estado">Anote os nomes citados pra começar.</span>`;return;}
+  const ult=passo===PASSOS.length-1;
+  r.innerHTML=`
+    <button class="bt fantasma" id="voltar" ${passo===0?"disabled":""}>← Voltar</button>
+    ${ult?`<button class="bt" id="salvar">Salvar ficha${fila.length>1?" e abrir o próximo":""}</button>`
+         :`<button class="bt" id="avancar">Avançar →</button>`}
+    <span class="estado" id="estado">${fila.length>1?(fila.length-1)+" ainda na fila · ":""}${persistente?"fila guardada automaticamente":"exporte antes de fechar"}</span>`;
+}
+document.addEventListener("click",e=>{
+  if(e.target.id==="voltar"){passo=Math.max(0,passo-1);desenharEtapa();}
+  if(e.target.id==="avancar"){passo=Math.min(PASSOS.length-1,passo+1);desenharEtapa();}
+  if(e.target.id==="salvar")salvar();
+});
+
+function toDB(f){return{
+  responsavel:f.responsavel||null, nome:f.nome, telefone:f.telefone||null,
+  municipio:f.municipio, bairro:f.bairro||null, profissao:f.profissao||null,
+  grau:f.grau||null, indicou:f.indicou||null, tipo_indicou:f.tipoIndicou||null,
+  relacao:f.relacao||null, setor:f.setor||[], influencia:f.influencia||null,
+  apresenta:f.apresenta||null, quantidade:f.quantidade||null, reuniao:f.reuniao||null,
+  nivel:f.nivel===""||f.nivel==null?null:Number(f.nivel), obs:f.obs||null
+};}
+function formatData(iso){ if(!iso)return""; const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(iso); return m?`${m[3]}/${m[2]}/${m[1]}`:iso; }
+function fromDB(r){return{
+  id:r.id, data:formatData(r.data_criacao), responsavel:r.responsavel||"",
+  nome:r.nome, telefone:r.telefone||"", municipio:r.municipio, bairro:r.bairro||"",
+  profissao:r.profissao||"", grau:r.grau||"", indicou:r.indicou||"",
+  tipoIndicou:r.tipo_indicou||"", relacao:r.relacao||"", setor:r.setor||[],
+  influencia:r.influencia||"", apresenta:r.apresenta||"", quantidade:r.quantidade||"",
+  reuniao:r.reuniao||"", nivel:r.nivel==null?"":r.nivel, obs:r.obs||"", _editId:null
+};}
+async function pullFichas(){
+  try{
+    const {data,error}=await sb.from("fichas").select("*").order("atualizado_em",{ascending:false});
+    if(error) throw error;
+    fichas=data.map(fromDB);
+    await gravar(K_FICHAS,fichas);
+    desenharLista(); atualizarContadores(); desenharResumo();
+    return true;
+  }catch(e){
+    const cache=await ler(K_FICHAS,[]);
+    if(Array.isArray(cache)) fichas=cache;
+    toast("Sem conexão. Usando cache local.");
+    console.error("pullFichas:",e);
+    return false;
+  }
+}
+
+async function salvar(){
+  const f=item(); if(!f)return;
+  if(!f.nome.trim()||!f.municipio.trim()){toast("Falta o nome ou o município.");passo=0;desenharEtapa();return;}
+  f.responsavel=$("#responsavel").value.trim();
+  const bt=$("#salvar"); if(bt){bt.disabled=true;bt.textContent="Salvando...";}
+  try{
+    const payload=toDB(f);
+    let res;
+    if(f._editId){
+      res=await sb.from("fichas").update(payload).eq("id",f._editId).select().single();
+    }else{
+      res=await sb.from("fichas").insert(payload).select().single();
+    }
+    if(res.error) throw res.error;
+    const salva=fromDB(res.data);
+    if(f._editId){
+      const i=fichas.findIndex(x=>x.id===f._editId);
+      if(i>=0) fichas[i]=salva; else fichas.unshift(salva);
+      toast("Ficha atualizada.");
+    }else{
+      fichas.unshift(salva);
+      toast("Ficha #"+salva.id+" salva.");
+    }
+    fila.splice(atual,1);
+    await gravar(K_FICHAS,fichas); await gravar(K_FILA,fila);
+    atual=fila.length?Math.min(atual,fila.length-1):null;
+    passo=0; desenharFila(); desenharEtapa(); atualizarContadores();
+    if(!fila.length)$("#q_nome").focus();
+  }catch(e){
+    console.error("salvar:",e);
+    toast("Erro ao salvar: "+(e.message||"tenta de novo"));
+    if(bt){bt.disabled=false;bt.textContent="Salvar ficha"+(fila.length>1?" e abrir o próximo":"");}
+  }
+}
+
+/* ---------- fichas ---------- */
+const cor=n=>{const x=NIVEIS.find(v=>String(v.n)===String(n));return x?x.c:"var(--linha-forte)";};
+const rotNiv=n=>{const x=NIVEIS.find(v=>String(v.n)===String(n));return x?"N"+x.n+" · "+x.t:"sem nível";};
+function filtradas(){
+  const t=($("#busca").value||"").toLowerCase().trim(),m=$("#fMun").value,n=$("#fNiv").value,s=$("#fSet").value,o=$("#fOrig").value;
+  return fichas.filter(f=>{
+    if(m&&f.municipio!==m)return false;
+    if(n&&String(f.nivel)!==n)return false;
+    if(s&&!(f.setor||[]).includes(s))return false;
+    if(o&&f.tipoIndicou!==o)return false;
+    if(t&&![f.nome,f.bairro,f.profissao,f.indicou,f.obs,f.municipio].join(" ").toLowerCase().includes(t))return false;
+    return true;
+  }).sort((a,b)=>(b.nivel||0)-(a.nivel||0)||(a.municipio||"").localeCompare(b.municipio||""));
+}
+function desenharLista(){
+  const sel=(id,arr)=>{const el=$(id),v=el.value;
+    el.innerHTML=el.querySelector("option").outerHTML+arr.map(o=>`<option value="${esc(o[0])}">${esc(o[1])}</option>`).join("");el.value=v;};
+  sel("#fMun",Array.from(new Set(fichas.map(f=>f.municipio).filter(Boolean))).sort().map(m=>[m,m]));
+  sel("#fNiv",NIVEIS.map(n=>[n.n,"Nível "+n.n+" — "+n.t]));
+  sel("#fSet",SETORES.map(s=>[s,s]));
+  const l=filtradas();
+  if(!fichas.length){$("#lista").innerHTML=`<div class="vazio" style="grid-column:1/-1"><b>Nenhuma ficha ainda</b>Faça a primeira ligação e salve na aba Ligação.</div>`;return;}
+  if(!l.length){$("#lista").innerHTML=`<div class="vazio" style="grid-column:1/-1"><b>Nada com esses filtros</b>Mude o município, o nível ou limpe a busca.</div>`;return;}
+  $("#lista").innerHTML=l.map(f=>`<div class="ficha" data-id="${f.id}" style="--cor:${cor(f.nivel)}">
+    <span class="id">#${String(f.id).padStart(3,"0")}</span>
+    <div class="nm">${esc(f.nome)}</div>
+    <div class="mu">${esc(f.municipio)}${f.bairro?" · "+esc(f.bairro):""}</div>
+    <span class="tag">${rotNiv(f.nivel)}</span>${f.tipoIndicou?`<span class="orig">via ${esc(f.tipoIndicou)}</span>`:""}
+    ${(f.setor||[]).length?`<div class="li">${esc(f.setor.join(", "))}</div>`:""}
+    ${f.indicou?`<div class="li">indicado por ${esc(f.indicou)}${f.relacao?" ("+esc(f.relacao)+")":""}</div>`:""}
+    ${f.obs?`<div class="li">${esc(f.obs)}</div>`:""}</div>`).join("");
+}
+$("#lista").addEventListener("click",async e=>{
+  const c=e.target.closest(".ficha");if(!c)return;
+  const f=fichas.find(x=>x.id===Number(c.dataset.id));if(!f)return;
+  if(!sessao.indicou){sessao={indicou:f.indicou||"—",tipoIndicou:f.tipoIndicou||""};await gravar(K_SES,sessao);}
+  const d=Object.assign(nova(),f,{setor:(f.setor||[]).slice(),_editId:f.id});
+  fila.push(d); atual=fila.length-1; passo=0; await gravar(K_FILA,fila);
+  $$(".aba").forEach(a=>a.classList.toggle("on",a.dataset.painel==="ligacao"));
+  $$(".painel").forEach(p=>p.classList.toggle("on",p.id==="p-ligacao"));
+  abrirTrabalho(); window.scrollTo({top:0,behavior:"smooth"});
+});
+["#busca","#fMun","#fNiv","#fSet","#fOrig"].forEach(s=>document.addEventListener("input",e=>{if(e.target.matches(s))desenharLista();}));
+function atualizarContadores(){
+  $("#contaFichas").textContent=fichas.length;
+  $("#lista-mun").innerHTML=Array.from(new Set(fichas.map(f=>f.municipio).filter(Boolean))).sort().map(m=>`<option value="${esc(m)}">`).join("");
+}
+
+/* ---------- resumo ---------- */
+function desenharResumo(){
+  const total=fichas.length, muns=new Set(fichas.map(f=>f.municipio).filter(Boolean));
+  const reuniao=fichas.filter(f=>f.reuniao==="Sim").length, apresenta=fichas.filter(f=>f.apresenta==="Sim").length;
+  const lider=fichas.filter(f=>Number(f.nivel)>=4).length;
+  const fontes=new Set(fichas.map(f=>f.indicou).filter(Boolean));
+  $("#cartoes").innerHTML=[[total,"fichas"],[muns.size,"municípios"],[fontes.size,"pessoas entrevistadas"],
+    [lider,"nível 4 ou 5"],[apresenta,"apresentam gente"],[reuniao,"organizam reunião"]]
+    .map(([n,l])=>`<div class="num"><b>${n}</b><span>${l}</span></div>`).join("");
+  const barra=(r,q,mx,c)=>`<div class="linha-b" style="--cor:${c||"var(--verde-claro)"}"><span>${esc(r)}</span><span class="tr"><i style="width:${mx?q/mx*100:0}%"></i></span><span class="qt">${q}</span></div>`;
+  const pn=NIVEIS.map(n=>[n,fichas.filter(f=>String(f.nivel)===String(n.n)).length]);
+  const mn=Math.max(1,...pn.map(x=>x[1]));
+  $("#grNiveis").innerHTML=pn.map(([n,q])=>barra("N"+n.n+" "+n.t,q,mn,n.c)).join("")
+    +(fichas.some(f=>!f.nivel)?barra("sem nível",fichas.filter(f=>!f.nivel).length,mn,"var(--linha-forte)"):"");
+  const cm={};fichas.forEach(f=>{if(f.municipio)cm[f.municipio]=(cm[f.municipio]||0)+1;});
+  const om=Object.entries(cm).sort((a,b)=>b[1]-a[1]),mm=Math.max(1,...om.map(x=>x[1]));
+  $("#grMun").innerHTML=om.length?om.map(([m,q])=>barra(m,q,mm)).join(""):`<p class="dica" style="padding:10px 0">Nenhum município ainda.</p>`;
+  const OR=["Assessor","Liderança","Apoiador"],co=OR.map(o=>[o,fichas.filter(f=>f.tipoIndicou===o).length]);
+  const so=fichas.filter(f=>!f.tipoIndicou).length,mo=Math.max(1,...co.map(x=>x[1]),so);
+  $("#grOrig").innerHTML=co.map(([o,q])=>barra(o,q,mo,"var(--verde)")).join("")+(so?barra("sem origem",so,mo,"var(--linha-forte)"):"");
+  const cs={};fichas.forEach(f=>(f.setor||[]).forEach(s=>cs[s]=(cs[s]||0)+1));
+  const os=Object.entries(cs).sort((a,b)=>b[1]-a[1]),ms=Math.max(1,...os.map(x=>x[1]));
+  $("#grSet").innerHTML=os.length?os.map(([s,q])=>barra(s,q,ms,"var(--ambar)")).join(""):`<p class="dica" style="padding:10px 0">Marque setores nas fichas pra ver a cobertura.</p>`;
+}
+
+/* ---------- exportar ---------- */
+const COLUNAS=[["id","Ficha"],["data","Data"],["responsavel","Quem ligou"],["nome","Nome"],["telefone","Telefone"],
+["municipio","Município"],["bairro","Bairro/região"],["profissao","Profissão"],["grau","Grau de contato"],
+["indicou","Quem indicou"],["tipoIndicou","Origem"],["relacao","Relação"],["setor","Setores"],["influencia","Influência"],
+["apresenta","Apresenta outras pessoas"],["quantidade","Quantas reúne"],["reuniao","Organiza reunião"],["nivel","Nível"],["obs","Observações"]];
+function csv(){const e=v=>{
+    let s=String(v==null?"":Array.isArray(v)?v.join(", "):v);
+    if(/^[=+\-@\t\r]/.test(s)) s="'"+s;
+    return '"'+s.replace(/"/g,'""')+'"';};
+  return "\ufeff"+[COLUNAS.map(c=>e(c[1])).join(";")].concat(fichas.map(f=>COLUNAS.map(c=>e(f[c[0]])).join(";"))).join("\r\n");}
+$("#exportar").addEventListener("click",()=>{if(!fichas.length){toast("Não há fichas para exportar.");return;}
+  $("#csvTexto").value=csv();$("#veu").classList.add("on");});
+$("#fechar").addEventListener("click",()=>$("#veu").classList.remove("on"));
+$("#veu").addEventListener("click",e=>{if(e.target.id==="veu")$("#veu").classList.remove("on");});
+$("#baixar").addEventListener("click",()=>{try{
+  const b=new Blob([csv()],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");
+  a.href=URL.createObjectURL(b);a.download="mapeamento-rede-"+new Date().toISOString().slice(0,10)+".csv";
+  document.body.appendChild(a);a.click();a.remove();toast("Arquivo gerado.");}catch(e){toast("Copie o texto.");}});
+$("#copiar").addEventListener("click",()=>{const t=$("#csvTexto");t.focus();t.select();
+  let ok=false;try{ok=document.execCommand("copy");}catch(e){}
+  if(!ok&&navigator.clipboard){navigator.clipboard.writeText(t.value).then(()=>toast("Copiado.")).catch(()=>toast("Copie manualmente."));return;}
+  toast(ok?"Copiado.":"Copie manualmente.");});
+
+window.addEventListener("beforeunload",e=>{
+  if(!persistente && (fila.length || fichas.length)){ e.preventDefault(); e.returnValue=""; }
+});
+
+/* ---------- auth + boot ---------- */
+function mostrarLogin(){ $("#login").classList.add("on"); $("#sair").style.display="none"; }
+function esconderLogin(){ $("#login").classList.remove("on"); $("#sair").style.display=""; }
+
+async function enviarLink(){
+  const email=$("#email").value.trim();
+  const msg=$("#loginMsg");
+  msg.className="login-msg";
+  if(!email||!/.+@.+\..+/.test(email)){ msg.textContent="Digite um email válido."; msg.classList.add("err"); return; }
+  const bt=$("#btLink"); bt.disabled=true; bt.textContent="Enviando...";
+  const redir=location.origin+location.pathname;
+  const {error}=await sb.auth.signInWithOtp({ email, options:{ emailRedirectTo:redir } });
+  bt.disabled=false; bt.textContent="Receber link";
+  if(error){ msg.textContent="Erro: "+error.message; msg.classList.add("err"); return; }
+  msg.textContent="Link enviado. Abre o email e clica pra entrar."; msg.classList.add("ok");
+}
+$("#btLink").addEventListener("click",enviarLink);
+$("#email").addEventListener("keydown",e=>{ if(e.key==="Enter") enviarLink(); });
+$("#sair").addEventListener("click",async()=>{
+  if(!confirm("Sair da conta neste dispositivo? A fila local será limpa.")) return;
+  await sb.auth.signOut();
+  try{ if(temLS){ [K_FICHAS,K_FILA,K_SES,K_CFG].forEach(k=>localStorage.removeItem(k)); } }catch(e){}
+  location.reload();
+});
+
+let jaBootou=false;
+async function bootApp(){
+  if(jaBootou) return; jaBootou=true;
+  esconderLogin();
+  const cfg=await ler(K_CFG,{}); if(cfg&&cfg.responsavel) $("#responsavel").value=cfg.responsavel;
+  fila=await ler(K_FILA,[]); if(!Array.isArray(fila)) fila=[];
+  fila=fila.map(f=>Object.assign(nova(),f,{setor:f.setor||[]}));
+  sessao=await ler(K_SES,{indicou:"",tipoIndicou:""})||{indicou:"",tipoIndicou:""};
+  const cache=await ler(K_FICHAS,[]); if(Array.isArray(cache)) fichas=cache;
+  atualizarContadores(); desenharLista();
+  if(sessao.indicou){ if(fila.length) atual=0; abrirTrabalho(); }
+  else { $("#abertura").style.display=""; $("#trabalho").style.display="none"; }
+  desenharRodape();
+  await pullFichas();
+}
+
+sb.auth.onAuthStateChange((evt,session)=>{
+  if(evt==="SIGNED_IN" && session) bootApp();
+  if(evt==="SIGNED_OUT"){ jaBootou=false; mostrarLogin(); }
+});
+
+window.addEventListener("focus",()=>{ if(jaBootou) pullFichas(); });
+
+(async function(){
+  mostrarLogin();
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    if(session) await bootApp();
+  }catch(e){ console.error("auth init:",e); }
+})();
+</script>
